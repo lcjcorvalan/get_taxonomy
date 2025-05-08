@@ -1,25 +1,49 @@
 # Get taxonomy information
 # july 17th, 2024
 # Leonardo Carlos Jeronimo Corvalan
+# some people found it difficult to import the myTAI package, so I just took this function from the package 
+# install packages
 
 # install packages
-if (!requireNamespace("BiocManager", quietly = TRUE))
-  install.packages("BiocManager")
-BiocManager::install()
-BiocManager::valid()
-BiocManager::install(c('AnnotationDbi', 'caTools', 'edgeR', 'GenomicRanges', 'GenomicAlignments', 'gtools', 'Rsamtools', 'VennDiagram' ), ask = FALSE)
-install.packages("myTAI")
+
+install.packages("taxize")
+
+
+# Here I copied the function from myTAI package 
+taxonomy <- function (organism, db = "ncbi", output = "classification") 
+{
+  if (!is.element(output, c("classification", "taxid", "children"))) 
+    stop("The output '", output, "' is not supported by this function.")
+  if (!is.element(db, c("ncbi", "itis"))) 
+    stop("Database '", db, "' is not supported by this function.")
+  name <- id <- NULL
+  if (db == "ncbi") 
+    tax_hierarchy <- as.data.frame(taxize::classification(taxize::get_uid(organism), 
+                                                          db = "ncbi")[[1]])
+  else if (db == "itis") 
+    tax_hierarchy <- as.data.frame(taxize::classification(taxize::get_tsn(organism), 
+                                                          db = "itis")[[1]])
+  if (output == "classification") {
+    return(tax_hierarchy)
+  }
+  if (output == "taxid") {
+    return(dplyr::select(dplyr::filter(tax_hierarchy, name == 
+                                         organism), id))
+  }
+  if (output == "children") {
+    return(as.data.frame(taxize::children(organism, db = db)[[1]]))
+  }
+}
 
 #packages
-require(myTAI)
-
+library(taxize)
 
 # If you have many species, I recommend using the ncbi API key
 # to generate your API kry acess: https://account.ncbi.nlm.nih.gov/settings/
 
 # TO use the api key
 taxize::use_entrez()
-ENTREZ_KEY='552717a8bf15a10e0810fe042905dd5f3808'
+ENTREZ_KEY='???????????????????????????'
 
 #copy and paste the key on the .Renvirion
 usethis::edit_r_environ()
